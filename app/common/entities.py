@@ -3,5 +3,5 @@ class ORACLE_DB:
     HOST="172.29.120.197"
     PORT="1521"
     USER_ID="sqlmanager"
-    USER_PW="sqliloveu"
+    USER_PW=""
     DB_NAME="XE"

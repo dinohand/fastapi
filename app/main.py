@@ -14,8 +14,6 @@ from app.common.const import *
 # from app.common.init import *
 import os
 
-from impala.dbapi import connect # 
-
 logger = Log_Manager().getLogger("MAIN")
 
 cm = Config_Manager() ## config manager

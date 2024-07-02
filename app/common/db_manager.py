@@ -5,6 +5,7 @@ from app.common.log_manager import Log_Manager
 from app.common.entities import ORACLE_DB
 from app.common.const import *
 
+from impala.dbapi import connect # pip install impyla
 
 class DB_Manager:
     logger = None
