@@ -7,8 +7,10 @@ from app.common.const import *
 
 from impala.dbapi import connect # pip install impyla
 
+
+logger = Log_Manager().getLogger('DATA')
+
 class DB_Manager:
-    logger = None
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(DB_Manager, cls).__new__(cls)
@@ -31,8 +33,10 @@ class DB_Manager:
 
             return conn
         except Exception as e:
-            print(e)
-            return {"message":e,"status":400}
+            logger.error(str(e))
+            
+            data = {"Exception" : str(e)}
+            return MSG_FAIL | { "result" : data }
         finally:
             pass
     
@@ -55,19 +59,23 @@ class DB_Manager:
         """
         conn = self.getOracle(ora_info=Config_Manager().ora_info)
         
+        sql = qry%param
+        logger.info(sql)
+        
         try:
             cursor = conn.cursor()
-            cursor.execute(qry, param)
-            cursor.rowfactory = self.make_dic_factory(curs)
+            cursor.execute(sql)
+            
+            cursor.rowfactory = self.make_dic_factory(cursor)
              
             res = cursor.fetchall()
             
-            data = {"data":res , "sql": qry}
+            data = {"data":res , "sql": sql}
                     
             return MSG_SUCCESS | { "result" : data } 
         except Exception as e:
             logger.error(str(e))
-            data = {"Exception" : str(e), "sql": qry}
+            data = {"Exception" : str(e), "sql": sql}
             return MSG_FAIL | { "result" : data }
         finally:
             cursor.close()
@@ -85,21 +93,25 @@ class DB_Manager:
         """
         conn = self.getOracle(ora_info=Config_Manager().ora_info)
 
+        sql = qry%param
+        logger.info(sql)
+
         conn.autocommit(False)
         conn.begin()
+        
         try:
             cursor = conn.cursor()
-            cursor.execute(qry, param)
+            cursor.execute(sql)
 
             conn.commit()
             
-            data = {"data":res , "rowcount": cursor.rowcount, "sql": qry }
+            data = {"data":res , "rowcount": cursor.rowcount, "sql": sql }
             return MSG_SUCCESS | { "result": data }
         except Exception as e:
             conn.rollback()
             
             logger.error(str(e))
-            data = {"Exception" : str(e), "sql": qry}
+            data = {"Exception" : str(e), "sql": sql}
             return MSG_FAIL | { "result" : data }
         finally:
             cursor.close()

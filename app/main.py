@@ -4,15 +4,20 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from pydantic import BaseModel
+from typing import Annotated
+
 
 from app.common.config_manager import Config_Manager
 from app.common.log_manager import Log_Manager
 from app.biz.route_service import Route_Service
-
 from app.biz.queries import *
 from app.common.const import *
+from app.biz.models import *
+
 # from app.common.init import *
 import os
+
+
 
 logger = Log_Manager().getLogger("MAIN")
 
@@ -109,15 +114,32 @@ async def check_health():
 async def upload():
     f = request.files['file']
     f.save(f.filename)
-    return '성공 여부 try except로 처리 계획'
-
-@app.get('/item/{item}', response_class=HTMLResponse)
-async def name_of_item(request : Request, item ):
-    return await rs.item(request, item) 
- 
+    return '성공 여부 try except로 처리 계획' 
 
 #---------------------------------------------------
-@app.post("/test_select", tags=['Test'])
+@app.post("/select_all_test", tags=['Test'])
 async def select_all_test():
     return await rs.select_all_test()
+
+@app.post("/select_test", tags=['Test'])
+def select_test(
+    *,
+     dict_m: Annotated[
+        DICT_M,
+        Body(
+            openapi_examples={
+                "normal":{
+                    "value":{
+                            "VALUE": "Foo"
+                    }
+                }
+            },
+        ),
+     ]
+    ):
+    
+    print (type( dict_m.VALUE) )
+    
+    return rs.select_test(dict_m)
+
 

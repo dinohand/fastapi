@@ -10,6 +10,8 @@ from app.common.config_manager import Config_Manager
 
 from app.biz.queries import *
 from app.common.const import *
+from app.biz.models import *
+
 
 
 # 라우트에 따른 처리 프로세스
@@ -34,19 +36,16 @@ class Route_Service:
         return "You need REST Api call"
 # -----------------------------------------------------------------------
     async def select_all_test(self):
-        sql = QUERY_STR['tes'].get('select_all')
-        try:
-            return MSG_SUCCESS | { "result" :  DB_Manager().select(sql, ())  }
-        except Exception as e:
-            return MSG_FAIL | {"Exeption" : e.args}
-        finally:
-            pass
+        sql = QUERY_STR['test'].get('select_all')
+        return DB_Manager().select(sql, ())
     
+    def select_test(self, dict_m : DICT_M ):
+        sql = QUERY_STR['test'].get('select')
+        return DB_Manager().select(sql, (dict_m.VALUE))
+    
+    
+
+# -----------------------------------------------------------------------
     async def insert_test(self):
-        sql = QUERIES_STR['tes'].get('select')
-        try:
-            return MSG_SUCCESS | { "result" :  DB_Manager().select(sql, ())  }
-        except Exception as e:
-            return MSG_FAIL | {"Exeption" : e.args}
-        finally:
-            pass
+        sql = QUERIES_STR['test'].get('insert')
+        return DB_Manager().select(sql, ()) 
