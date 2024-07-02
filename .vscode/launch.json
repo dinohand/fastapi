@@ -1,0 +1,54 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Prduct",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "5000",
+                "--workers",
+                "4"                
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "RUN_MODE":"PRD",
+            }
+        },
+        {
+            "name": "Develop",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "app.main:app",
+                "--host",
+                "0.0.0.0",
+                "--reload",
+                "--port",
+                "5000"
+            ],
+
+            "console": "integratedTerminal",
+            "env": {
+                "RUN_MODE":"DEV",
+            }
+        },
+        {
+            "name": "Test File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "env": {
+                "RUN_MODE":"TEST",
+            }
+        },
+    ]
+}

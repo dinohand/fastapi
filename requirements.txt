@@ -1,0 +1,8 @@
+fastapi
+configparser
+coloredlogs
+uvicorn
+
+oracledb
+
+impyla
