@@ -138,8 +138,6 @@ def select_test(
      ]
     ):
     
-    print (type( dict_m.VALUE) )
-    
     return rs.select_test(dict_m)
 
 
