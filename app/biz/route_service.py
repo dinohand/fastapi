@@ -35,8 +35,9 @@ class Route_Service:
         # self.logger.info("hello----------------")
         return "You need REST Api call"
 # -----------------------------------------------------------------------
-    async def select_all_test(self):
+    def select_all_test(self):
         sql = QUERY_STR['test'].get('select_all')
+        print(f'sql -> {sql}' )
         return DB_Manager().select(sql, ())
     
     def select_test(self, dict_m : DICT_M ):

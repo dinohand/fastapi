@@ -118,8 +118,8 @@ async def upload():
 
 #---------------------------------------------------
 @app.post("/select_all_test", tags=['Test'])
-async def select_all_test():
-    return await rs.select_all_test()
+def select_all_test():
+    return rs.select_all_test()
 
 @app.post("/select_test", tags=['Test'])
 def select_test(

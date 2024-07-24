@@ -7,7 +7,6 @@ from app.common.const import *
 
 from impala.dbapi import connect # pip install impyla
 
-
 logger = Log_Manager().getLogger('DATA')
 
 class DB_Manager:
@@ -27,10 +26,7 @@ class DB_Manager:
     # def getOracle(self, user_id:str, pswd:str, host:str, db_port:string, port:str , db_name:str ) -> Connection :
     #     con = oracledb.connect(user="scott", password="tiger", dsn="192.168.1.171:1521/ORA19")
         try:
-            conn = oracledb.connect( user=ora_info.USER_ID , 
-                                            password=ora_info.USER_PW, 
-                                            dsn= ora_info.HOST + ':' + ora_info.PORT + '/' + ora_info.DB_NAME )
-
+            conn = oracledb.connect( user=ora_info.USER_ID , password=ora_info.USER_PW, dsn= ora_info.HOST + ':' + ora_info.PORT + '/' + ora_info.DB_NAME )
             return conn
         except Exception as e:
             logger.error(str(e))
@@ -48,15 +44,6 @@ class DB_Manager:
         return create_row
         
     def select(self, qry : str, param : tuple) :
-        """Select query문을 실행행한다
-
-        Args:
-            qry (str): 쿼리문
-            param (tuple): 쿼리문에 사용되는 파라미터
-
-        Returns:
-            dict : 실행 결과 
-        """
         conn = self.getOracle(ora_info=Config_Manager().ora_info)
         
         sql = qry%param
@@ -70,12 +57,14 @@ class DB_Manager:
              
             res = cursor.fetchall()
             
-            data = {"data":res , "sql": sql}
+            data = {"data": res , "sql": sql}
                     
-            return MSG_SUCCESS | { "result" : data } 
+            return MSG_SUCCESS | { "result" : data }
+         
         except Exception as e:
             logger.error(str(e))
             data = {"Exception" : str(e), "sql": sql}
+            
             return MSG_FAIL | { "result" : data }
         finally:
             cursor.close()
