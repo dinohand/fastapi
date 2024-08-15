@@ -2,10 +2,10 @@ from configparser import ConfigParser
 from app.common.entities import ORACLE_DB
 import os, datetime
 
-class Config_Manager:
-    ## 
+class Config_Manager():
     properties = None
     ora_info =  None
+    
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Config_Manager, cls).__new__(cls)
@@ -37,7 +37,6 @@ class Config_Manager:
     
     def getProperty(self, sec:str, key:str) -> str | None:
         """Section과 Key해당되는 value를 리턴한다
-
         Args:
             sec (str): section
             key (str): key

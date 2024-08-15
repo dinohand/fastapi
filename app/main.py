@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi import Response, Request, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
 from typing import Annotated
-
 
 from app.common.config_manager import Config_Manager
 from app.common.log_manager import Log_Manager
@@ -13,18 +13,11 @@ from app.biz.route_service import Route_Service
 from app.biz.queries import *
 from app.common.const import *
 from app.biz.models import *
+from PIL import Image
 
 # from app.common.init import *
 import os
 
-
-
-logger = Log_Manager().getLogger("MAIN")
-
-cm = Config_Manager() ## config manager
-rs = Route_Service()
-
-logger.debug( f'Main Module({__file__}) is activated' )
 
 #------------------------------------------------------
 # 초기 설정
@@ -39,25 +32,15 @@ for dir in dirs :
         os.makedirs(new_dir)
         logger.info(f'{new_dir} folder is created')
 
-
-# swagger_ui_default_parameters: Annotated[
-#     Dict[str, Any],
-#     Doc(
-#         # """
-#         # Default configurations for Swagger UI.
-
-#         # You can use it as a template to add any other configurations needed.
-#         # """
-#     ),
-# ] = {
-#     "dom_id": "#swagger-ui",
-#     "layout": "BaseLayout",
-#     "deepLinking": True,
-#     "showExtensions": True,
-#     "showCommonExtensions": True,
-# }
+# 2. logger 설정
+cm = Config_Manager() ## config manager
+rs = Route_Service()
 
 
+logger = Log_Manager().getLogger("MAIN")
+logger.info( f'Main Module({__file__}) is activated' )
+
+#----------------------------------------------------------
 app = FastAPI(
             # swagger_ui_parameters=swagger_ui_default_parameters,
             swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"},
@@ -81,22 +64,18 @@ app = FastAPI(
             },
         )
 
-# tags_metadata = [
-#     {
-#         "name": "users",
-#         "description": "Operations with users. The **login** logic is also here.",
-#     },
-#     {
-#         "name": "items",
-#         "description": "Manage items. So _fancy_ they have their own docs.",
-#         "externalDocs": {
-#             "description": "Items external docs",
-#             "url": "https://fastapi.tiangolo.com/",
-#         },
-#     },
-# ]
-# app = FastAPI(openapi_tags=tags_metadata)
+#-- CORS Env
+origins = ["*"]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# set static folder
 app.mount("/home", StaticFiles(directory="home"), name="home")
 app.mount("/NAS", StaticFiles(directory="NAS"), name="NAS")
 

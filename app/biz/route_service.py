@@ -37,12 +37,15 @@ class Route_Service:
 # -----------------------------------------------------------------------
     def select_all_test(self):
         sql = QUERY_STR['test'].get('select_all')
-        print(f'sql -> {sql}' )
         return DB_Manager().select(sql, ())
     
     def select_test(self, dict_m : DICT_M ):
         sql = QUERY_STR['test'].get('select')
-        return DB_Manager().select(sql, (dict_m.VALUE))
+        
+        # param = (dict_m.VALUE )
+        return DB_Manager().select(sql, ( dict_m.VALUE, )  )
+        # return DB_Manager().select(sql, ( None )  )
+    
     
     
 
