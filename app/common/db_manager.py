@@ -81,7 +81,9 @@ class DB_Manager():
             
             # column_names = [desc[0] for desc in cursor.description]
             # # res = pd.DataFrame( cursor.fetchall() , columns=column_names )
-            # res = pd.DataFrame( cursor.fetchall()  )
+            # res = cursor.faetchall()
+            # df = pd.DataFrame(res, columns=column_names)
+            # df.to_dict(orient='records'
             
             data = {"data": res , "sql": sql}
             return MSG_SUCCESS | { "result" : data }
