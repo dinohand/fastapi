@@ -5,8 +5,39 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 
+class MailSender:
+    def __init__(self, smtp_svr, subject, sender, receiver, cc,bcc):
+        self.content_list = []
 
-## --> Class 객체로 만들 예정
+        self.smtp_svr =
+        self.emIl = MIMEMultipart("mixed")
+
+   def _add_list_content(self, _content_type='', _content, file_list =[]):
+       if(_content_type == "html"):
+         self.contents_list.append(MIMEText(_content,_content_type)
+       elif(_content_type == 'images')
+            for file_name in file_list:
+                with open(file_name ,'rb') as fp:
+                    img = MIMEImage(fp.read)
+                    img.add_header(
+                    self.contents_list.append(img)
+    def _merge_content(self):
+        for content in self.contents_list:
+            self.email.attach(content)
+        content = []
+
+   def _add_content
+
+   def add_ht_content):
+       self.emIl.attach( mimetext(content, 'html')
+
+   def add_cid(self, cid_name , cid_image : bytes)
+    cid_data = MIMEImage(cid_image)
+    cid_data.add_header('Content-ID', f'<{cid_name}>')
+    self.email.attach(cid_data)
+
+
+ ## --> Class 객체로 만들 예정
 def send_email(subject, body, to_email, from_email, smtp_server, smtp_port, login, password, attachment_path=None):
     # Create the email headers and message
     msg = MIMEMultipart()
