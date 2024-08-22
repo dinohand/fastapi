@@ -17,40 +17,40 @@ import numpy as np
 logger = Log_Manager().getLogger('DATA')
 
 class DB_Manager():
+    
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(DB_Manager, cls).__new__(cls)
         return cls.instance     
 
     def __init__(self) -> None:
-        logger = Log_Manager().getLogger(type(self).__name__)
+        # logger = Log_Manager().getLogger(type(self).__name__)
+        pass
 
     def gegSQLite(self, conn_str):
         conn = sqlite3.connect(conn_str)
         return conn
 
-    def getOracle(self, ora_info: ORACLE_DB ):
-    # def getOracle(self, user_id:str, pswd:str, host:str, db_port:string, port:str , db_name:str ) -> Connection :
-    #     con = oracledb.connect(user="scott", password="tiger", dsn="192.168.1.171:1521/ORA19")
+    def getOracle(self, ora_info: ORACLE_DB ) -> oracledb.Connection:
+        """Oralce Connection객체를 리턴한다
+        Args:
+            ora_info (ORACLE_DB): 오라클 conection 정보
+        Returns:
+            connection : oracledb.Connection
+        """
         parent_frame = sys._getframe(1).f_code.co_name
         # current_frame = inspect.getframeinfo(inspect.currentframe()).function
         try:
             conn = oracledb.connect( user=ora_info.USER_ID , password=ora_info.USER_PW, dsn= ora_info.HOST + ':' + ora_info.PORT + '/' + ora_info.DB_NAME )
             return conn
         except Exception as e:
-            logger.error(str(e))
+            msg = CR + str(e) + CR + f"caller:{parent_frame}"
+            logger.error(msg)
             
             data = {"Exception" : str(e), "caller": parent_frame}
             return MSG_FAIL | { "result" : data }
         finally:
             pass
-    
-    def make_dic_factory(self, cursor):
-        column_names = [d[0] for d in cursor.description]
-
-        def create_row(*args):
-            return dict(zip(column_names, args))
-        return create_row
 
     ## '%' string 대입을 위한 tuple을 만든다
     def make_tuple(self, param : tuple | str ):
@@ -65,9 +65,20 @@ class DB_Manager():
         else:
             return (param,)
     
+    def select_data(self, qry : str, param : tuple | str):
+        pass
+    
     # sql select문을 실행한다
     def select(self, qry : str, param : tuple | str):
-        parent_frame = sys._getframe(1).f_code.co_name
+        """쿼리문을 실행한다
+            select문을 실행한다
+        Args:
+            qry (str): 쿼리문
+            param (tuple): 쿼리문에 사용되는 파라미터
+        Returns:
+            dict: 실행 결과
+        """
+        parent_frame = sys._getframe(1).f_code.co_name # 호출한 객체(function, module,,,)를 알아낸다
         # current_frame = inspect.getframeinfo(inspect.currentframe()).function
 
         sql = qry%self.make_tuple(param)
@@ -75,24 +86,18 @@ class DB_Manager():
         try:
             cursor = conn.cursor()
             cursor.execute(sql)
-            
-            cursor.rowfactory = self.make_dic_factory(cursor)
             res = cursor.fetchall()
             
-            # column_names = [desc[0] for desc in cursor.description]
-            # # res = pd.DataFrame( cursor.fetchall() , columns=column_names )
-            # res = cursor.faetchall()
-            # df = pd.DataFrame(res, columns=column_names)
-            # df.to_dict(orient='records'
+            column_names = [desc[0] for desc in cursor.description]
             
-            data = {"data": res , "sql": sql}
-            return MSG_SUCCESS | { "result" : data }
-         
+            df = pd.DataFrame(res, columns=column_names)
+            df = df.fillna('')      ## None / null 처리, 하지 않으면 Out of range float values are not JSON compliant 에러 발생함
+            return MSG_SUCCESS | { "result" : df.to_dict(orient='records') }
         except Exception as e:
-            logger.error(str(e))
-            data = {"Exception" : str(e), "sql": sql}
+            msg = CR + str(e) + CR + f"caller:{parent_frame}" + CR + f"sql:{sql}"
+            logger.error(msg)
             
-            return MSG_FAIL | { "result" : data }
+            return MSG_FAIL | {"Exception" : str(e), "caller": parent_frame , "sql": sql}
         finally:
             cursor.close()
             conn.close()
@@ -100,7 +105,7 @@ class DB_Manager():
     # insert/update/delete등의 transaction 관리가 필요한 sql 문을 실행한다
     def execute(self, qry : str, param : tuple) -> dict:
         """쿼리문을 실행한다
-            select문은 select() nethod를 실행한다
+            select문은 select() method를 실행한다
         Args:
             qry (str): 쿼리문
             param (tuple): 쿼리문에 사용되는 파라미터
@@ -120,14 +125,22 @@ class DB_Manager():
             cursor.execute(sql)
             conn.commit()
             
-            data = {"data":res , "caller": parent_frame,  "rowcount": cursor.rowcount, "sql": sql }
-            return MSG_SUCCESS | { "result": data }
+            return MSG_SUCCESS | {  "rowcount": cursor.rowcount, "caller": parent_frame} #, "sql": sql }
         except Exception as e:
             conn.rollback()
-            
-            logger.error(str(e))
-            data = {"Exception" : str(e), "caller": parent_frame, "sql": sql}
-            return MSG_FAIL | { "result" : data }
+            msg = CR + str(e) + CR + f"caller:{parent_frame}" + CR + f"sql:{sql}"
+            logger.error(msg)
+
+            return MSG_FAIL | {"Exception" : str(e), "caller": parent_frame ,  "sql": sql}
         finally:
             cursor.close()
             comm.close()
+
+
+    # result 에 colums를 dict로 zip하여 리턴한다
+    # def make_dic_factory(self, cursor):
+    #     column_names = [d[0] for d in cursor.description]
+
+    #     def create_row(*args):
+    #         return dict(zip(column_names, args))
+    #     return create_row

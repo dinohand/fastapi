@@ -40,6 +40,7 @@ rs = Route_Service()
 logger = Log_Manager().getLogger("MAIN")
 logger.info( f'Main Module({__file__}) is activated' )
 
+_root_path ='/api/v1'
 #----------------------------------------------------------
 app = FastAPI(
             # swagger_ui_parameters=swagger_ui_default_parameters,
@@ -48,8 +49,8 @@ app = FastAPI(
             summary='summary',
             description='Boilerplate',
             version='0.1',
-            root_path='',
-            docs_url='/api/v1/docs',
+            root_path=_root_path,
+            docs_url='/docs',
             # redoc_url='/api/v1/redocs',
             terms_of_service="", ## "http://example.com/terms/",
             contact={
@@ -82,7 +83,7 @@ app.mount("/NAS", StaticFiles(directory="NAS"), name="NAS")
 #---------------------------------------------------
 @app.get('/')
 async def read_item():
-    redirect_url = '/home/index.html'
+    redirect_url = f'{_root_path}/home/index.html'
     return RedirectResponse(redirect_url, status_code=303)
     # return await rs.root()
 
@@ -99,6 +100,15 @@ async def upload():
 @app.post("/select_all_test", tags=['Test'])
 def select_all_test():
     return rs.select_all_test()
+
+@app.post("/select_error", tags=['Test'])
+def select_error():
+    return rs.select_error()
+
+@app.post("/select_multi", tags=['Test'])
+def select_multi():
+    return rs.select_multi()
+
 
 @app.post("/select_test", tags=['Test'])
 def select_test(

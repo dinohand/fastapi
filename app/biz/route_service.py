@@ -12,13 +12,12 @@ from app.biz.queries import *
 from app.common.const import *
 from app.biz.models import *
 
-
+logger = Log_Manager().getLogger("BIZ")
 
 # 라우트에 따른 처리 프로세스
 class Route_Service:
-    logger = None
     def __init__(self) -> None:
-        self.logger = Log_Manager().getLogger( type(self).__name__ )
+        # self_name = Log_Manager().getLogger( type(self).__name__ )
         self.templates = Jinja2Templates(directory="static")   ### templates.TemplateResponse를 사용하려면 Route_Service에서 선언되어야 있어야 한다
 
     ## root page route
@@ -37,7 +36,45 @@ class Route_Service:
 # -----------------------------------------------------------------------
     def select_all_test(self):
         sql = QUERY_STR['test'].get('select_all')
-        return DB_Manager().select(sql, ())
+        res  = DB_Manager().select(sql, ())
+        
+        # if res["status"] == OK: 
+        #     logger.info(res["result"])
+        # else:
+        #     logger.info(res)            
+        
+        return res
+    
+    def select_error(self):
+        sql = QUERY_STR['test'].get('select_error')
+        res  = DB_Manager().select(sql, ())
+        
+        # if res["status"] == OK: 
+        #     logger.info(res["result"])
+        # else:
+        #     logger.info(res)            
+        
+        return res
+    
+    
+    def select_multi(self):
+        sql = QUERY_STR['test'].get('select_all')
+        res  = DB_Manager().select(sql, ())
+        
+        res2 = DB_Manager().select("select count(*)  as CNT from dual", ())
+        
+        if res["status"] != OK:  return res
+        if res2["status"] != OK:  return res2
+        
+        result = []
+        result.append( {"mst": res["result"]} )
+        result.append( {"branch" : res2["result"]} )
+            
+        print('==========================================================')
+        print(f"res_mst[1].get('branch')[0].get('CNT') = {result[1].get('branch')[0].get('CNT')}")
+        print(f"res_mst[1][]'branch'][0]['CNT'] = {result[1]['branch'][0]['CNT']}")
+        
+        return MSG_SUCCESS | { "result" : result}
     
     def select_test(self, dict_m : DICT_M ):
         sql = QUERY_STR['test'].get('select')
@@ -45,9 +82,6 @@ class Route_Service:
         # param = (dict_m.VALUE )
         return DB_Manager().select(sql, ( dict_m.VALUE, )  )
         # return DB_Manager().select(sql, ( None )  )
-    
-    
-    
 
 # -----------------------------------------------------------------------
     async def insert_test(self):
