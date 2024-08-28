@@ -6,24 +6,56 @@ from email import encoders
 import os
 
 class MailSender:
-    def __init__(self, smtp_svr, subject, sender, receiver, cc,bcc):
-        self.content_list = []
-
-## 수정중
-class MailSender():
-    def __init__(self, login :str , password : str, smtp_server :str, smtp_port:int):
-        self.server = smtplib.SMTP(smtp_server, smtp_port)
-        # server.starttls()
-        self.server.login(login, password)
-        self.msg = MIMEMultipart('mixed')
-        self.content =''
-        
-    def set_title(self, subject):
-        self.msg['Subject'] = subject
+    def __init__(self, login :str = '' , password : str = '' , smtp_server :str ='' , smtp_port:int = 100):
+        self.__server = smtplib.SMTP(smtp_server, smtp_port)
+        self.__server.login(login, password)
+        self.__msg = MIMEMultipart('mixed')
+        self.__content =''
+        self.__subject = ''
+        self.__sender = ''
     
-    def set_email(self, from_email, to_email):
-        self.msg['From'] = from_email
-        self.msg['To'] = to_email
+        
+    # 메일 서버
+    @property
+    def server(self):
+        return self.__server
+
+    @server.setter
+    def server(self, smtp_server : str):
+        self.__server = smtp_server
+
+    # 메일 제목
+    @property
+    def subject(self):
+        return self.__subject
+
+    @subject.setter
+    def subject(self, subject : str = ''):
+        self.__subject = subject
+        self.msg['Subject'] = self.__subject
+
+    # 발신자
+    @property
+    def sender(self):
+        return self.__sender
+
+    @sender.setter
+    def sender(self, sender : str = ''):
+        self.__sender = sender
+        self.msg['From'] = self.__sender
+    
+    # 수신자
+    @property
+    def reciever(self):
+        return self.__reciever
+    
+    @reciever.setter
+    def reciever(self, reciever : str = ''):
+        self.__reciever = reciever
+        self.msg['To'] = self.__reciever
+        
+        
+    
     
     def attach(self):
         if attachment_path:

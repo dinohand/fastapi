@@ -36,7 +36,7 @@ class Route_Service:
 # -----------------------------------------------------------------------
     def select_all_test(self):
         sql = QUERY_STR['test'].get('select_all')
-        res  = DB_Manager().select(sql, ())
+        res  = DB_Manager().select(sql)
         
         # if res["status"] == OK: 
         #     logger.info(res["result"])

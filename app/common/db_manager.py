@@ -17,7 +17,6 @@ import numpy as np
 logger = Log_Manager().getLogger('DATA')
 
 class DB_Manager():
-    
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(DB_Manager, cls).__new__(cls)
@@ -27,11 +26,19 @@ class DB_Manager():
         # logger = Log_Manager().getLogger(type(self).__name__)
         pass
 
-    def gegSQLite(self, conn_str):
+    def _geg_SQLite(self, conn_str : str):
+        """SQLite connection을 리턴한다
+
+        Args:
+            conn_str (str): connection string
+
+        Returns:
+            connection : SQLite connection
+        """        
         conn = sqlite3.connect(conn_str)
         return conn
 
-    def getOracle(self, ora_info: ORACLE_DB ) -> oracledb.Connection:
+    def _get_Oracle(self, ora_info: ORACLE_DB ) -> oracledb.Connection:
         """Oralce Connection객체를 리턴한다
         Args:
             ora_info (ORACLE_DB): 오라클 conection 정보
@@ -52,8 +59,38 @@ class DB_Manager():
         finally:
             pass
 
+    def get_conn(self, db_type : str = 'oracle', conn_str : str = '') : #  class 상속시 get_conn()을 override한다
+        """db_type 에 따른 db connection을 리턴한다
+
+        Args:
+            db_type (str, optional):  Database type. Defaults to 'oracle'.
+            conn_str (str, optional): Connection strng. Defaults to ''.
+
+        Raises:
+            Exception: does not support Database Exception
+
+        Returns:
+            connection : connection
+        """ 
+        if db_type.lower() == 'oracle':
+            return self._get_Oracle(ora_info=Config_Manager().ora_info)
+        elif db_type.lower() == 'sqlite':
+            return self._geg_SQLite(conn_str)
+        else:
+            raise Exception("does not support")
+
     ## '%' string 대입을 위한 tuple을 만든다
-    def make_tuple(self, param : tuple | str ):
+    def _make_tuple(self, param : tuple | list | str) -> tuple:
+        """param을 tuple 형태로 리턴한다
+        
+            ex) make_tuple(None) returns ('',)
+                make_tuple(()) returns ()
+        Args:
+            param (tuple | list | str): tuple 형태로 리턴할 입력 값
+
+        Returns:
+            tuple: tuple value
+        """
         if param is None: return ('',)
         elif type(param) == list: return tuple(param)
         elif type(param) == tuple:
@@ -65,11 +102,8 @@ class DB_Manager():
         else:
             return (param,)
     
-    def select_data(self, qry : str, param : tuple | str):
-        pass
-    
     # sql select문을 실행한다
-    def select(self, qry : str, param : tuple | str):
+    def select(self, query : str, param : tuple = (), result_type : str =  'records' ):
         """쿼리문을 실행한다
             select문을 실행한다
         Args:
@@ -81,8 +115,9 @@ class DB_Manager():
         parent_frame = sys._getframe(1).f_code.co_name # 호출한 객체(function, module,,,)를 알아낸다
         # current_frame = inspect.getframeinfo(inspect.currentframe()).function
 
-        sql = qry%self.make_tuple(param)
-        conn = self.getOracle(ora_info=Config_Manager().ora_info)
+        sql = query%self._make_tuple(param)
+        
+        conn = self.get_conn(db_type='oracle')
         try:
             cursor = conn.cursor()
             cursor.execute(sql)
@@ -92,7 +127,7 @@ class DB_Manager():
             
             df = pd.DataFrame(res, columns=column_names)
             df = df.fillna('')      ## None / null 처리, 하지 않으면 Out of range float values are not JSON compliant 에러 발생함
-            return MSG_SUCCESS | { "result" : df.to_dict(orient='records') }
+            return MSG_SUCCESS | { "result" : df.to_dict(orient=result_type) }
         except Exception as e:
             msg = CR + str(e) + CR + f"caller:{parent_frame}" + CR + f"sql:{sql}"
             logger.error(msg)
@@ -103,7 +138,7 @@ class DB_Manager():
             conn.close()
 
     # insert/update/delete등의 transaction 관리가 필요한 sql 문을 실행한다
-    def execute(self, qry : str, param : tuple) -> dict:
+    def execute(self, query : str, param : tuple = ('',)) -> dict:
         """쿼리문을 실행한다
             select문은 select() method를 실행한다
         Args:
@@ -115,17 +150,17 @@ class DB_Manager():
         parent_frame = sys._getframe(1).f_code.co_name
         # current_frame = inspect.getframeinfo(inspect.currentframe()).function
         
-        sql = qry%self.make_tuple(param)
+        sql = query%self._make_tuple(param)
 
-        conn = self.getOracle(ora_info=Config_Manager().ora_info)
-        conn.autocommit(False)
+        conn = self.get_conn(db_type='oracle')
+        conn.autocommit(False)  # transaction
         conn.begin()
         try:
             cursor = conn.cursor()
             cursor.execute(sql)
             conn.commit()
             
-            return MSG_SUCCESS | {  "rowcount": cursor.rowcount, "caller": parent_frame} #, "sql": sql }
+            return MSG_SUCCESS | {  "rowcount": cursor.rowcount, "caller": parent_frame} 
         except Exception as e:
             conn.rollback()
             msg = CR + str(e) + CR + f"caller:{parent_frame}" + CR + f"sql:{sql}"
