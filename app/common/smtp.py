@@ -5,6 +5,9 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 
+class MailSender:
+    def __init__(self, smtp_svr, subject, sender, receiver, cc,bcc):
+        self.content_list = []
 
 ## 수정중
 class MailSender():
