@@ -66,8 +66,9 @@ class MailSender:
             part.add_header('Content-Disposition', f"attachment; filename= {os.path.basename(attachment_path)}")
             msg.attach(part)
  
-    def set_content(sefl, content):
-        self.content = content
+    def add_content(sefl, content):
+        
+        self.email.attach(MIMEText (content, 'html'))
         
         
     def send(send):
