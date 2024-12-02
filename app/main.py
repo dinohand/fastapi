@@ -128,5 +128,15 @@ def select_test(
     ):
     
     return rs.select_test(dict_m)
-
+        
+@app.post('/do_upload_test')
+async def do_upload_test(
+    seq : Annotated[str , Form()],
+    name : Optional[str] = Form(""),
+    UPFile : UploadFile | str = File(File)
+):
+    if UPFile != '':
+        print('File uploaded')
+    else:
+        print('No File uploaded')
 
