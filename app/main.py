@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi import Response, Request, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -81,6 +81,10 @@ app.mount("/home", StaticFiles(directory="home"), name="home")
 app.mount("/NAS", StaticFiles(directory="NAS"), name="NAS")
 
 #---------------------------------------------------
+@app.get('/health')
+async def read_item():
+    return {"status" : 200}
+
 @app.get('/')
 async def read_item():
     redirect_url = f'{_root_path}/home/index.html'
@@ -129,4 +133,34 @@ def select_test(
     
     return rs.select_test(dict_m)
 
+from typing import List, Optional
 
+@app.post("/insert_form", tags=['Test'])
+async def insert_form( content : Annotated[str , Form()],
+                    #    file : Annotated[bytes, File() ],
+                       name : Optional[str] = Form(description='이름'),
+                    #    file : UploadFile  = Form() ):
+                    #    file : UploadFile  =  File(...)  ) : 
+
+                    #    file: Annotated[bytes | None, File()] = None
+                       file: UploadFile = File(description='파일을 올려주세요', )
+                    # Annotated, Optional, UploadFile 순서로 선언되어야 한다
+                    #    file : Optional[UploadFile ] =  Form() ) : # Annotated, Optional, UploadFile 순서로 선언되어야 한다
+    
+                    ):
+    if (file is not None):
+        return {"filename": file.filename, "name":name , "content" : content}
+    else :
+        return {"filename": 'None', "name": name ,  "content" : content}
+
+
+@app.post('/do_upload_test')
+async def do_upload_test(
+    seq : Annotated[str , Form()],
+    name : Optional[str] = Form(""),
+    UPFile : UploadFile | str = File(File)
+):
+    if UPFile != '':
+        print('File uploaded')
+    else:
+        print('No File uploaded')

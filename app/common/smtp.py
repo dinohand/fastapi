@@ -54,9 +54,6 @@ class MailSender:
         self.__reciever = reciever
         self.msg['To'] = self.__reciever
         
-        
-    
-    
     def attach(self):
         if attachment_path:
             attachment = open(attachment_path, "rb")
