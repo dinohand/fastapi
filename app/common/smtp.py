@@ -63,15 +63,20 @@ class MailSender:
             part.add_header('Content-Disposition', f"attachment; filename= {os.path.basename(attachment_path)}")
             msg.attach(part)
  
-    def set_content(sefl, content):
-        self.content = content
+    def add_content(sefl, content):
+        
+        self.email.attach(MIMEText (content, 'html'))
         
         
     def send(send):
         with server.SMTP(smtp_server, port) as server:
             server.sendmail(self.from_email, self.to_email, self.content )
-        server.quit()    
-            
+            server.quit()    
+
+    def add_cid(self, cid_name:str, cid_image : bytes):
+        cid_data = MIMEImage(cid_image)
+        cid_data.add_header('Content-ID', f'<{cid_name}>')
+        self.email.attach(cid_data)
 
 # # Example usage
 # if __name__ == "__main__":
