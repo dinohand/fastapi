@@ -158,7 +158,9 @@ async def insert_form( content : Annotated[str , Form()],
 async def do_upload_test(
     seq : Annotated[str , Form()],
     name : Optional[str] = Form(""),
-    UPFile : UploadFile | str = File(File)
+   # UPFile : UploadFile | str = File(File)
+    UPFile : UploadFile | str = File(None)
+    
 ):
     if UPFile != '':
         print('File uploaded')
